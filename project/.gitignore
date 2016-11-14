@@ -1,0 +1,11 @@
+/Library/
+/Temp/
+/obj/
+/QCAR/
+/.vs/
+/*.sln
+/*.csproj
+/*.csproj.user
+/*.unityproj
+/*.userprefs
+/NativePlugins/
