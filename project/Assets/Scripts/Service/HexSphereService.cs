@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Xml.Schema;
 using UnityEngine;
 
 public class HexSphereService : Service<HexSphereService>
@@ -6,6 +7,7 @@ public class HexSphereService : Service<HexSphereService>
     #region Icosahedron Consts
     private const float X = 0.525731112119133606f;
     private const float Z = 0.850650808352039932f;
+    private const int NbIcosahedronFaces = 20;
 
     private static readonly Vector3[] IsocahedronVertices =
     {
@@ -75,7 +77,7 @@ public class HexSphereService : Service<HexSphereService>
     };
     #endregion
 
-    public int Resolution = 4;
+    public int Resolution = 0;
     public Material Material;
     public Transform World;
 
@@ -84,43 +86,69 @@ public class HexSphereService : Service<HexSphereService>
     private List<Vector2> _sphereUvs;
     private List<int> _sphereTris;
 
+    private const int MaxResolutionWithSingleMesh = 5;
+    private const int MaxResolutionBeforeMeshSubdivision = 7;
+
     protected override void InitService()
     {
-        _nbVertices = 20 * 3 * (int)Mathf.Pow(4, Resolution); // 20 triangles on an icosahedron, 3 vertices per triangle, each triangle when subdivided yields 4 triangles
+        var container = new GameObject { name = "GeodesicSphere_" + Resolution + "_Subdivisions" };
+        container.transform.parent = World;
+
+        var isSingleMesh = Resolution <= MaxResolutionWithSingleMesh;
+
+        _nbVertices = NbIcosahedronFaces * 3 * (int)Mathf.Pow(4, Resolution); // 20 triangles on an icosahedron, 3 vertices per triangle, each triangle when subdivided yields 4 triangles
+        var verticesPerFace = _nbVertices / NbIcosahedronFaces;
+        var meshSubdivisionDepth = (int)Mathf.Pow(4, Mathf.Max(0, Resolution - MaxResolutionBeforeMeshSubdivision));
+        var nbMeshSubdivisions = isSingleMesh ? 1 : NbIcosahedronFaces * meshSubdivisionDepth;
+        var verticesPerMesh = isSingleMesh ? _nbVertices : verticesPerFace / meshSubdivisionDepth;
+
+        Debug.Log("Total Verts [" + _nbVertices + "]");
+        Debug.Log("Verts per Face [" + verticesPerFace + "]");
+        Debug.Log("Verts per Mesh [" + verticesPerMesh + "]");
+        Debug.Log("Total Mesh Subdivisions [" + nbMeshSubdivisions + "]");
+
         _spherePoints = new List<Vector3>(_nbVertices);
         _sphereUvs = new List<Vector2>(_nbVertices);
-        _sphereTris = new List<int>(_nbVertices);
+        _sphereTris = new List<int>(verticesPerMesh);
 
-        for (var i = 0; i < 20; i++)
-            Subdivide(IsocahedronVertices[IsocahedronTriangles[i][0]],
-                      IsocahedronVertices[IsocahedronTriangles[i][1]],
-                      IsocahedronVertices[IsocahedronTriangles[i][2]],
-                      IsocahedronTriangleUvs[i][0],
-                      IsocahedronTriangleUvs[i][1],
-                      IsocahedronTriangleUvs[i][2],
-                      Resolution);
-
-        var mesh = new Mesh
+        //FunctionTimer.START_FUNCTION_TIMER("Subdivision_Total");
+        for (var i = 0; i < NbIcosahedronFaces; i++)
         {
-            name = "GeodesicSphere_Mesh_" + Resolution,
-            vertices = _spherePoints.ToArray(),
-            uv = _sphereUvs.ToArray(),
-            triangles = _sphereTris.ToArray()
-        };
-        mesh.RecalculateNormals();
-        mesh.RecalculateBounds();
-        CalculateMeshTangents(mesh);
-        mesh.Optimize();
+            Subdivide(IsocahedronVertices[IsocahedronTriangles[i][0]],
+                IsocahedronVertices[IsocahedronTriangles[i][1]],
+                IsocahedronVertices[IsocahedronTriangles[i][2]],
+                IsocahedronTriangleUvs[i][0],
+                IsocahedronTriangleUvs[i][1],
+                IsocahedronTriangleUvs[i][2],
+                Resolution, i == 0 || isSingleMesh);
+        }
+        //FunctionTimer.STOP_FUNCTION_TIMER("Subdivision_Total");
 
-        var obj = new GameObject { name = "GeodesicSphere_" + Resolution };
-        var objRenderer = obj.AddComponent<MeshRenderer>();
-        var objFilter = obj.AddComponent<MeshFilter>();
-        objFilter.mesh = mesh;
-        objRenderer.material = Material;
-        obj.transform.parent = World;
+        for (var i = 0; i < nbMeshSubdivisions; i++)
+        {
+            var startIdx = isSingleMesh ? 0 : i * verticesPerMesh;
+            var mesh = new Mesh
+            {
+                name = isSingleMesh ? "GeodesicSphere_Mesh" : "GeodesicSphere_Face_" + i + "_Mesh",
+                vertices = _spherePoints.GetRange(startIdx, verticesPerMesh).ToArray(),
+                uv = _sphereUvs.GetRange(startIdx, verticesPerMesh).ToArray(),
+                triangles = _sphereTris.ToArray()
+            };
+            mesh.RecalculateNormals();
+            mesh.RecalculateBounds();
+            CalculateMeshTangents(mesh);
+            mesh.Optimize();
+
+            var obj = new GameObject { name = isSingleMesh ? "GeodesicSphere" : "GeodesicSphere_Face" + i };
+            var objRenderer = obj.AddComponent<MeshRenderer>();
+            var objFilter = obj.AddComponent<MeshFilter>();
+            objFilter.mesh = mesh;
+            objRenderer.sharedMaterial = Material;
+            obj.transform.parent = container.transform;
+        }
     }
 
-    private void Subdivide(Vector3 v1, Vector3 v2, Vector3 v3, Vector2 uv1, Vector2 uv2, Vector2 uv3, int depth)
+    private void Subdivide(Vector3 v1, Vector3 v2, Vector3 v3, Vector2 uv1, Vector2 uv2, Vector2 uv3, int depth, bool addTris = false)
     {
         if (depth == 0)
         {
@@ -132,9 +160,12 @@ public class HexSphereService : Service<HexSphereService>
             _sphereUvs.Add(uv2);
             _sphereUvs.Add(uv3);
 
-            _sphereTris.Add(_spherePoints.Count - 1);
-            _sphereTris.Add(_spherePoints.Count - 2);
-            _sphereTris.Add(_spherePoints.Count - 3);
+            if (addTris)
+            {
+                _sphereTris.Add(_spherePoints.Count - 1);
+                _sphereTris.Add(_spherePoints.Count - 2);
+                _sphereTris.Add(_spherePoints.Count - 3);
+            }
             return;
         }
         var v12 = (v1 + v2).normalized;
@@ -145,10 +176,11 @@ public class HexSphereService : Service<HexSphereService>
         var uv23 = (uv2 + uv3) / 2f;
         var uv31 = (uv3 + uv1) / 2f;
 
-        Subdivide(v1, v12, v31, uv1, uv12, uv31, depth - 1);
-        Subdivide(v2, v23, v12, uv2, uv23, uv12, depth - 1);
-        Subdivide(v3, v31, v23, uv3, uv31, uv23, depth - 1);
-        Subdivide(v12, v23, v31, uv12, uv23, uv31, depth - 1);
+        var addTrisDepth = addTris && depth <= 7;
+        Subdivide(v1, v12, v31, uv1, uv12, uv31, depth - 1, addTris);
+        Subdivide(v2, v23, v12, uv2, uv23, uv12, depth - 1, addTrisDepth);
+        Subdivide(v3, v31, v23, uv3, uv31, uv23, depth - 1, addTrisDepth);
+        Subdivide(v12, v23, v31, uv12, uv23, uv31, depth - 1, addTrisDepth);
     }
 
     private static void CalculateMeshTangents(Mesh mesh)
