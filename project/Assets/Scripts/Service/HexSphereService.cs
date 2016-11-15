@@ -91,14 +91,36 @@ public class HexSphereService : Service<HexSphereService>
 
     protected override void InitService()
     {
-        var container = new GameObject { name = "GeodesicSphere_" + Resolution + "_Subdivisions" };
+        CreateGeodesicSphere(Resolution);
+        FunctionTimer.DISPLAY_FUNCTION_TIMER_AVERAGE("Subdivision_Total_" + Resolution);
+        FunctionTimer.DISPLAY_FUNCTION_TIMER_AVERAGE("MeshCreation_Total_" + Resolution);
+
+        //for (var i = 0; i < Resolution; i++)
+        //    CreateGeodesicSphere(i);
+
+        /*
+        for (int i = 0; i < Resolution; i++)
+        {
+            FunctionTimer.DISPLAY_FUNCTION_TIMER_AVERAGE("Subdivision_Total_" + i);
+            FunctionTimer.DISPLAY_FUNCTION_TIMER_AVERAGE("MeshCreation_Total_" + i);
+        }
+        */
+    }
+
+    private void CreateGeodesicSphere(int resolution)
+    {
+        var container = new GameObject { name = "GeodesicSphere_" + resolution + "_Subdivisions" };
         container.transform.parent = World;
+        var pos = Vector3.zero;
+        pos.x = 2.5f * (resolution % 4);
+        pos.y = 2.5f - (2 * resolution / 8) * 2.5f;
+        container.transform.position = pos;
 
-        var isSingleMesh = Resolution <= MaxResolutionWithSingleMesh;
+        var isSingleMesh = resolution <= MaxResolutionWithSingleMesh;
 
-        _nbVertices = NbIcosahedronFaces * 3 * (int)Mathf.Pow(4, Resolution); // 20 triangles on an icosahedron, 3 vertices per triangle, each triangle when subdivided yields 4 triangles
+        _nbVertices = NbIcosahedronFaces * 3 * (int)Mathf.Pow(4, resolution); // 20 triangles on an icosahedron, 3 vertices per triangle, each triangle when subdivided yields 4 triangles
         var verticesPerFace = _nbVertices / NbIcosahedronFaces;
-        var meshSubdivisionDepth = (int)Mathf.Pow(4, Mathf.Max(0, Resolution - MaxResolutionBeforeMeshSubdivision));
+        var meshSubdivisionDepth = (int)Mathf.Pow(4, Mathf.Max(0, resolution - MaxResolutionBeforeMeshSubdivision));
         var nbMeshSubdivisions = isSingleMesh ? 1 : NbIcosahedronFaces * meshSubdivisionDepth;
         var verticesPerMesh = isSingleMesh ? _nbVertices : verticesPerFace / meshSubdivisionDepth;
 
@@ -111,7 +133,7 @@ public class HexSphereService : Service<HexSphereService>
         _sphereUvs = new List<Vector2>(_nbVertices);
         _sphereTris = new List<int>(verticesPerMesh);
 
-        //FunctionTimer.START_FUNCTION_TIMER("Subdivision_Total");
+        FunctionTimer.START_FUNCTION_TIMER("Subdivision_Total_" + resolution);
         for (var i = 0; i < NbIcosahedronFaces; i++)
         {
             Subdivide(IsocahedronVertices[IsocahedronTriangles[i][0]],
@@ -120,10 +142,11 @@ public class HexSphereService : Service<HexSphereService>
                 IsocahedronTriangleUvs[i][0],
                 IsocahedronTriangleUvs[i][1],
                 IsocahedronTriangleUvs[i][2],
-                Resolution, i == 0 || isSingleMesh);
+                resolution, i == 0 || isSingleMesh);
         }
-        //FunctionTimer.STOP_FUNCTION_TIMER("Subdivision_Total");
+        FunctionTimer.STOP_FUNCTION_TIMER("Subdivision_Total_" + resolution);
 
+        FunctionTimer.START_FUNCTION_TIMER("MeshCreation_Total_" + resolution);
         for (var i = 0; i < nbMeshSubdivisions; i++)
         {
             var startIdx = isSingleMesh ? 0 : i * verticesPerMesh;
@@ -144,8 +167,9 @@ public class HexSphereService : Service<HexSphereService>
             var objFilter = obj.AddComponent<MeshFilter>();
             objFilter.mesh = mesh;
             objRenderer.sharedMaterial = Material;
-            obj.transform.parent = container.transform;
+            obj.transform.SetParent(container.transform, false);
         }
+        FunctionTimer.STOP_FUNCTION_TIMER("MeshCreation_Total_" + resolution);
     }
 
     private void Subdivide(Vector3 v1, Vector3 v2, Vector3 v3, Vector2 uv1, Vector2 uv2, Vector2 uv3, int depth, bool addTris = false)
