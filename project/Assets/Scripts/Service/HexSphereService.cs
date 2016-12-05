@@ -78,6 +78,7 @@ public class HexSphereService : Service<HexSphereService>
     #endregion
 
     public int Resolution = 0;
+    public int SmoothingAngle = 60;
     public Material Material;
     public Transform World;
 
@@ -157,7 +158,7 @@ public class HexSphereService : Service<HexSphereService>
                 uv = _sphereUvs.GetRange(startIdx, verticesPerMesh).ToArray(),
                 triangles = _sphereTris.ToArray()
             };
-            mesh.RecalculateNormals(60);
+            mesh.RecalculateNormals(SmoothingAngle);
             mesh.RecalculateBounds();
             CalculateMeshTangents(mesh);
             mesh.Optimize();
