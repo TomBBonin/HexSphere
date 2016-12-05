@@ -157,11 +157,11 @@ public class HexSphereService : Service<HexSphereService>
                 uv = _sphereUvs.GetRange(startIdx, verticesPerMesh).ToArray(),
                 triangles = _sphereTris.ToArray()
             };
-            mesh.RecalculateNormals();
+            mesh.RecalculateNormals(60);
             mesh.RecalculateBounds();
             CalculateMeshTangents(mesh);
             mesh.Optimize();
-
+            
             var obj = new GameObject { name = isSingleMesh ? "GeodesicSphere" : "GeodesicSphere_Face" + i };
             var objRenderer = obj.AddComponent<MeshRenderer>();
             var objFilter = obj.AddComponent<MeshFilter>();
