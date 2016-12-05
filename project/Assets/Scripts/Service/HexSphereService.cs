@@ -1,5 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Runtime.Remoting.Messaging;
 using System.Xml.Schema;
+using UnityEditor;
 using UnityEngine;
 
 public class HexSphereService : Service<HexSphereService>
@@ -79,6 +82,7 @@ public class HexSphereService : Service<HexSphereService>
 
     public int Resolution = 0;
     public Material Material;
+    public Material MaterialDual;
     public Transform World;
 
     private int _nbVertices;
@@ -86,12 +90,18 @@ public class HexSphereService : Service<HexSphereService>
     private List<Vector2> _sphereUvs;
     private List<int> _sphereTris;
 
+    private List<Vector3> _dualPoints;
+    private List<Vector2> _dualUvs;
+    private List<int> _dualTris;
+    private List<int> _dualSummits;
+
     private const int MaxResolutionWithSingleMesh = 5;
     private const int MaxResolutionBeforeMeshSubdivision = 7;
 
     protected override void InitService()
     {
         CreateGeodesicSphere(Resolution);
+        CreateDual();
         FunctionTimer.DISPLAY_FUNCTION_TIMER_AVERAGE("Subdivision_Total_" + Resolution);
         FunctionTimer.DISPLAY_FUNCTION_TIMER_AVERAGE("MeshCreation_Total_" + Resolution);
 
@@ -133,6 +143,11 @@ public class HexSphereService : Service<HexSphereService>
         _sphereUvs = new List<Vector2>(_nbVertices);
         _sphereTris = new List<int>(verticesPerMesh);
 
+        _dualPoints = new List<Vector3>();
+        _dualUvs = new List<Vector2>();
+        _dualTris = new List<int>();
+        _dualSummits = new List<int>();
+
         FunctionTimer.START_FUNCTION_TIMER("Subdivision_Total_" + resolution);
         for (var i = 0; i < NbIcosahedronFaces; i++)
         {
@@ -172,7 +187,7 @@ public class HexSphereService : Service<HexSphereService>
         FunctionTimer.STOP_FUNCTION_TIMER("MeshCreation_Total_" + resolution);
     }
 
-    private void Subdivide(Vector3 v1, Vector3 v2, Vector3 v3, Vector2 uv1, Vector2 uv2, Vector2 uv3, int depth, bool addTris = false)
+    private Vector3 Subdivide(Vector3 v1, Vector3 v2, Vector3 v3, Vector2 uv1, Vector2 uv2, Vector2 uv3, int depth, bool addTris = false)
     {
         if (depth == 0)
         {
@@ -190,7 +205,7 @@ public class HexSphereService : Service<HexSphereService>
                 _sphereTris.Add(_spherePoints.Count - 2);
                 _sphereTris.Add(_spherePoints.Count - 3);
             }
-            return;
+            return Vector3.Cross(v2 - v1, v3 - v1).normalized; // return the center of the face
         }
         var v12 = (v1 + v2).normalized;
         var v23 = (v2 + v3).normalized;
@@ -201,10 +216,167 @@ public class HexSphereService : Service<HexSphereService>
         var uv31 = (uv3 + uv1) / 2f;
 
         var addTrisDepth = addTris && depth <= 7;
-        Subdivide(v1, v12, v31, uv1, uv12, uv31, depth - 1, addTris);
-        Subdivide(v2, v23, v12, uv2, uv23, uv12, depth - 1, addTrisDepth);
-        Subdivide(v3, v31, v23, uv3, uv31, uv23, depth - 1, addTrisDepth);
-        Subdivide(v12, v23, v31, uv12, uv23, uv31, depth - 1, addTrisDepth);
+        var A = Subdivide(v1, v12, v31, uv1, uv12, uv31, depth - 1, addTris);
+        var B = Subdivide(v2, v23, v12, uv2, uv23, uv12, depth - 1, addTrisDepth);
+        var C = Subdivide(v3, v31, v23, uv3, uv31, uv23, depth - 1, addTrisDepth);
+        var D = Subdivide(v12, v23, v31, uv12, uv23, uv31, depth - 1, addTrisDepth);
+
+        if (depth == 1)
+        {
+            var centerHeight = 0.96f;
+            _dualPoints.Add(v1 * centerHeight);
+            _dualSummits.Add(_dualPoints.Count - 1);
+            _dualPoints.Add(v2 * centerHeight);
+            _dualSummits.Add(_dualPoints.Count - 1);
+            _dualPoints.Add(v3 * centerHeight);
+            _dualSummits.Add(_dualPoints.Count - 1);
+            _dualPoints.Add(v12 * centerHeight);
+            _dualSummits.Add(_dualPoints.Count - 1);
+            _dualPoints.Add(v23 * centerHeight);
+            _dualSummits.Add(_dualPoints.Count - 1);
+            _dualPoints.Add(v31 * centerHeight);
+            _dualSummits.Add(_dualPoints.Count - 1);
+            _dualPoints.Add(A);
+            _dualPoints.Add(B);
+            _dualPoints.Add(C);
+            _dualPoints.Add(D);
+
+            _dualUvs.Add(Vector2.zero);
+            _dualUvs.Add(Vector2.zero);
+            _dualUvs.Add(Vector2.zero);
+            _dualUvs.Add(Vector2.zero);
+            _dualUvs.Add(Vector2.zero);
+            _dualUvs.Add(Vector2.zero);
+            _dualUvs.Add(Vector2.zero);
+            _dualUvs.Add(Vector2.zero);
+            _dualUvs.Add(Vector2.zero);
+            _dualUvs.Add(Vector2.zero);
+        }
+
+        return Vector3.zero;
+    }
+
+    private void CreateDual()
+    {
+        for (var summitIdx = 0; summitIdx < _dualSummits.Count; summitIdx++)
+        {
+            var summit = _dualSummits[summitIdx];
+            var summitPoint = _dualPoints[summit];
+            var closestVertDists = new List<float>(6);
+            var closestVerts = new List<int>(6);
+            for (var i = 0; i < 6; i++)
+            {
+                closestVertDists.Add(float.PositiveInfinity);
+                closestVerts.Add(-1);
+            }
+
+            for (var j = 0; j < _dualPoints.Count; j++)
+            {
+                var point = _dualPoints[j];
+                if (point == summitPoint)
+                    continue;
+
+                var dist = Vector3.Distance(summitPoint, point);
+                for (var i = 5; i >= 0; i--)
+                {
+                    if (dist <= closestVertDists[i])
+                    {
+                        if (i != 0)
+                            continue;
+
+                        closestVertDists.Insert(0, dist);
+                        closestVertDists.RemoveAt(6);
+                        closestVerts.Insert(0, j);
+                        closestVerts.RemoveAt(6);
+                    }
+                    else
+                    {
+                        if (i < 5)
+                        {
+                            closestVertDists.Insert(i + 1, dist);
+                            closestVertDists.RemoveAt(6);
+                            closestVerts.Insert(i + 1, j);
+                            closestVerts.RemoveAt(6);
+                        }
+                        break;
+                    }
+                }
+            }
+
+            if (closestVertDists[5] > closestVertDists[4] * 1.2f) // Pentagon
+                closestVerts.RemoveAt(5);
+
+            // build tris
+            var pointsToIgnore = new List<int>();
+            pointsToIgnore.Add(summit);
+            var nbTris = 0;
+            var arbitraryPoint = closestVerts[0];
+            while (nbTris < closestVerts.Count)
+            {
+                pointsToIgnore.Add(arbitraryPoint); // add arbitrary points to list of points to ignore
+
+                if (pointsToIgnore.Count == closestVerts.Count + 1)
+                {
+                    // add last triangle
+                    AddDualTri(arbitraryPoint, summit, closestVerts[0]);
+                    nbTris++;
+                    continue;
+                }
+                var closestDist = float.PositiveInfinity;
+                var closestPoint = -1; // closest point to arbitrary point, that is not a summit and has not been an arbitrary point before 
+                for (var j = 0; j < closestVerts.Count; j++)
+                {
+                    if (pointsToIgnore.Contains(closestVerts[j]))
+                        continue;
+                    var pointDist = Vector3.Distance(_dualPoints[arbitraryPoint], _dualPoints[closestVerts[j]]);
+                    if (pointDist < closestDist)
+                    {
+                        closestPoint = closestVerts[j];
+                        closestDist = pointDist;
+                    }
+                }
+                AddDualTri(arbitraryPoint, summit, closestPoint);
+                nbTris++;
+
+                arbitraryPoint = closestPoint;
+            }
+            // build UVs
+        }
+        var mesh = new Mesh
+        {
+            name = "Dual_Mesh",
+            vertices = _dualPoints.ToArray(),
+            uv = _dualUvs.ToArray(),
+            triangles = _dualTris.ToArray()
+        };
+        mesh.RecalculateNormals();
+        mesh.RecalculateBounds();
+        CalculateMeshTangents(mesh);
+        mesh.Optimize();
+
+        var obj = new GameObject { name = "Dual" };
+        var objRenderer = obj.AddComponent<MeshRenderer>();
+        var objFilter = obj.AddComponent<MeshFilter>();
+        objFilter.mesh = mesh;
+        objRenderer.sharedMaterial = MaterialDual;
+        //obj.transform.SetParent(container.transform, false);
+    }
+
+    private void AddDualTri(int arbitraryPoint, int summit, int closestPoint)
+    {
+        var normal = Vector3.Cross(_dualPoints[arbitraryPoint] - _dualPoints[summit], _dualPoints[closestPoint] - _dualPoints[summit]).normalized;
+        if (Vector3.Dot(normal, _dualPoints[summit]) < 0)
+        {
+            _dualTris.Add(arbitraryPoint);
+            _dualTris.Add(summit);
+            _dualTris.Add(closestPoint);
+        }
+        else
+        {
+            _dualTris.Add(closestPoint);
+            _dualTris.Add(summit);
+            _dualTris.Add(arbitraryPoint);
+        }
     }
 
     private static void CalculateMeshTangents(Mesh mesh)

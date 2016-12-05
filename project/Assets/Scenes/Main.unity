@@ -642,6 +642,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 13c211750a0db5c469597fdd3c622f41, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Resolution: 10
+  Resolution: 2
   Material: {fileID: 2100000, guid: a4ada2fd4d9752f4e9eccba52981eaca, type: 2}
+  MaterialDual: {fileID: 2100000, guid: f5272badde4b57c4798d95c8938f5be7, type: 2}
   World: {fileID: 1577726485}
