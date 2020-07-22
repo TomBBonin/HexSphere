@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Thomas
@@ -117,13 +118,13 @@ namespace Thomas
             var container = new GameObject {name = "GeodesicSphere_" + resolution + "_Subdivisions"};
             container.transform.parent = World;
             var pos = Vector3.zero;
-            pos.x = 2.5f * (resolution % 4);
-            pos.y = 2.5f - (2 * resolution / 8) * 2.5f;
+            //pos.x = 2.5f * (resolution % 4);
+            //pos.y = 2.5f - (2 * resolution / 8) * 2.5f;
             container.transform.position = pos;
 
             var isSingleMesh = resolution <= MaxResolutionWithSingleMesh;
 
-            _nbVertices = NbIcosahedronFaces * 3 * (int) Mathf.Pow(4, resolution); // 20 triangles on an icosahedron, 3 vertices per triangle, each triangle when subdivided yields 4 triangles
+            _nbVertices = NbIcosahedronFaces * 3 * (int) Mathf.Pow(9, resolution); // 20 triangles on an icosahedron, 3 vertices per triangle, each triangle when subdivided yields 4 triangles
             var verticesPerFace = _nbVertices / NbIcosahedronFaces;
             var meshSubdivisionDepth = (int) Mathf.Pow(4, Mathf.Max(0, resolution - MaxResolutionBeforeMeshSubdivision));
             var nbMeshSubdivisions = isSingleMesh ? 1 : NbIcosahedronFaces * meshSubdivisionDepth;
@@ -137,7 +138,10 @@ namespace Thomas
             _spherePoints = new List<Vector3>(_nbVertices);
             _sphereUvs = new List<Vector2>(_nbVertices);
             _sphereTris = new List<int>(verticesPerMesh);
-
+            _centers = new List<Vector3>();
+            _v1s = new List<Vector3>();
+            _hexes = new List<Hex>();
+            
             FunctionTimer.START_FUNCTION_TIMER("Subdivision_Total_" + resolution);
             for (var i = 0; i < NbIcosahedronFaces; i++)
             {
@@ -149,9 +153,10 @@ namespace Thomas
                     IsocahedronTriangleUvs[i][2],
                     resolution, i == 0 || isSingleMesh);
             }
-
             FunctionTimer.STOP_FUNCTION_TIMER("Subdivision_Total_" + resolution);
 
+            FlattenHexes();
+            
             FunctionTimer.START_FUNCTION_TIMER("MeshCreation_Total_" + resolution);
             for (var i = 0; i < nbMeshSubdivisions; i++)
             {
@@ -199,20 +204,76 @@ namespace Thomas
 
                 return;
             }
+            
+            var vctr = (v1 + v2+ v3).normalized;
+            _centers.Add(vctr);
+            var v12a = (v1 + (v2 - v1) / 3f).normalized; 
+            var v12b = (v1 + (v2 - v1) / 3f * 2f).normalized; 
+            var v23a = (v2 + (v3 - v2) / 3f).normalized;  
+            var v23b = (v2 + (v3 - v2) / 3f * 2f).normalized;  
+            var v13a = (v1 + (v3 - v1) / 3f).normalized;  
+            var v13b = (v1 + (v3 - v1) / 3f * 2f).normalized; 
 
-            var v12 = (v1 + v2).normalized;
-            var v23 = (v2 + v3).normalized;
-            var v31 = (v3 + v1).normalized;
-
-            var uv12 = (uv1 + uv2) / 2f;
-            var uv23 = (uv2 + uv3) / 2f;
-            var uv31 = (uv3 + uv1) / 2f;
-
+            var uvctr = (uv1 + uv2 + uv3) / 3f;
+            var uv12a = (uv1 + (uv2 - uv1) / 3f); 
+            var uv12b = (uv1 + (uv2 - uv1) / 3f * 2f);
+            var uv23a = (uv2 + (uv3 - uv2) / 3f);  
+            var uv23b = (uv2 + (uv3 - uv2) / 3f * 2f);
+            var uv13a = (uv1 + (uv3 - uv1) / 3f);  
+            var uv13b = (uv1 + (uv3 - uv1) / 3f * 2f);
+            
             var addTrisDepth = addTris && depth <= 7;
-            Subdivide(v1, v12, v31, uv1, uv12, uv31, depth - 1, addTris);
-            Subdivide(v2, v23, v12, uv2, uv23, uv12, depth - 1, addTrisDepth);
-            Subdivide(v3, v31, v23, uv3, uv31, uv23, depth - 1, addTrisDepth);
-            Subdivide(v12, v23, v31, uv12, uv23, uv31, depth - 1, addTrisDepth);
+
+            Subdivide(v1, v12a, v13a, uv1, uv12a, uv13a, depth - 1, addTrisDepth); // not hex
+            Subdivide(v2, v23a, v12b, uv2, uv23a, uv12b, depth - 1, addTrisDepth); // not hex
+            Subdivide(v3, v13b, v23b, uv3, uv13b, uv23b, depth - 1, addTrisDepth); // not hex
+
+            if(depth -1 == 0)
+                _hexes.Add(new Hex(((v1 + v2).normalized + (v2 + v3).normalized + (v1 + v3).normalized) / 3f, _spherePoints.Count));
+            
+            Subdivide(vctr, v12a, v12b, uvctr, uv12a, uv12b, depth - 1, addTrisDepth);
+            Subdivide(vctr, v13a, v12a, uvctr, uv13a, uv12a, depth - 1, addTrisDepth);
+            Subdivide(vctr, v12b, v23a, uvctr, uv12b, uv23a, depth - 1, addTrisDepth);
+            Subdivide(vctr, v23a, v23b, uvctr, uv23a, uv23b, depth - 1, addTrisDepth);
+            Subdivide(vctr, v13b, v13a, uvctr, uv13b, uv13a, depth - 1, addTrisDepth);
+            Subdivide(vctr, v23b, v13b, uvctr, uv23b, uv13b, depth - 1, addTrisDepth);
+        }
+
+        private List<Hex> _hexes;
+        private class Hex
+        {
+            public int CenterVertIdx;
+            public Vector3 CenterVertPos;
+
+            public Hex(Vector3 pos, int idx)
+            {
+                CenterVertPos = pos;
+                CenterVertIdx = idx;
+            }
+        }
+        
+        private void FlattenHexes()
+        {
+            foreach (var hex in _hexes)
+            {
+                for (var i = 0; i < 6; i++)
+                    _spherePoints[hex.CenterVertIdx + (i * 3)] = hex.CenterVertPos;
+            }
+        }
+
+        private List<Vector3> _centers;
+        private List<Vector3> _v1s;
+
+        protected void OnDrawGizmos()
+        {
+            Gizmos.color = Color.blue;
+            if(_centers != null) 
+                foreach (var ctr in _centers) 
+                    Gizmos.DrawWireSphere(ctr, 0.05f);
+            Gizmos.color = Color.red;
+            if(_v1s != null)
+                foreach (var v1 in _v1s)
+                    Gizmos.DrawWireSphere(v1, 0.05f);
         }
 
         private static void CalculateMeshTangents(Mesh mesh)
