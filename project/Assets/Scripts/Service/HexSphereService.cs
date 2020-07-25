@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 namespace Thomas
 {
@@ -12,7 +13,7 @@ namespace Thomas
         private const float Z = 0.850650808352039932f;
         private const int NbIcosahedronFaces = 20;
 
-        private static readonly Vector3[] IsocahedronVertices =
+        private static readonly Vector3[] IcosahedronVertices =
         {
             new Vector3(0, Z, X), new Vector3(0, Z, -X), new Vector3(Z, X, 0), new Vector3(X, 0, Z),
             new Vector3(-X, 0, Z), new Vector3(-Z, X, 0), new Vector3(-X, 0, -Z), new Vector3(X, 0, -Z),
@@ -22,7 +23,7 @@ namespace Thomas
         private const float HalfTriangleX = 1f / 11f;
         private const float TriangleHeight = 1f / 3f;
 
-        private static readonly Vector2[] IsocahedronUvs =
+        private static readonly Vector2[] IcosahedronUvs =
         {
             new Vector2(HalfTriangleX * 2f, 1f), // 0A
             new Vector2(HalfTriangleX, TriangleHeight * 2f), // 1A
@@ -48,31 +49,31 @@ namespace Thomas
             new Vector2(HalfTriangleX * 10f, TriangleHeight), // 6B  (21)
         };
 
-        private static readonly Vector2[][] IsocahedronTriangleUvs =
+        private static readonly Vector2[][] IcosahedronTriangleUvs =
         {
-            new[] {IsocahedronUvs[1], IsocahedronUvs[2], IsocahedronUvs[0]},
-            new[] {IsocahedronUvs[2], IsocahedronUvs[3], IsocahedronUvs[16]},
-            new[] {IsocahedronUvs[3], IsocahedronUvs[4], IsocahedronUvs[17]},
-            new[] {IsocahedronUvs[4], IsocahedronUvs[5], IsocahedronUvs[18]},
-            new[] {IsocahedronUvs[5], IsocahedronUvs[20], IsocahedronUvs[19]},
-            new[] {IsocahedronUvs[6], IsocahedronUvs[7], IsocahedronUvs[1]},
-            new[] {IsocahedronUvs[7], IsocahedronUvs[2], IsocahedronUvs[1]},
-            new[] {IsocahedronUvs[7], IsocahedronUvs[8], IsocahedronUvs[2]},
-            new[] {IsocahedronUvs[8], IsocahedronUvs[3], IsocahedronUvs[2]},
-            new[] {IsocahedronUvs[8], IsocahedronUvs[9], IsocahedronUvs[3]},
-            new[] {IsocahedronUvs[9], IsocahedronUvs[4], IsocahedronUvs[3]},
-            new[] {IsocahedronUvs[9], IsocahedronUvs[10], IsocahedronUvs[4]},
-            new[] {IsocahedronUvs[10], IsocahedronUvs[5], IsocahedronUvs[4]},
-            new[] {IsocahedronUvs[10], IsocahedronUvs[21], IsocahedronUvs[5]},
-            new[] {IsocahedronUvs[21], IsocahedronUvs[20], IsocahedronUvs[5]},
-            new[] {IsocahedronUvs[11], IsocahedronUvs[7], IsocahedronUvs[6]},
-            new[] {IsocahedronUvs[12], IsocahedronUvs[8], IsocahedronUvs[7]},
-            new[] {IsocahedronUvs[13], IsocahedronUvs[9], IsocahedronUvs[8]},
-            new[] {IsocahedronUvs[14], IsocahedronUvs[10], IsocahedronUvs[9]},
-            new[] {IsocahedronUvs[15], IsocahedronUvs[21], IsocahedronUvs[10]}
+            new[] {IcosahedronUvs[1], IcosahedronUvs[2], IcosahedronUvs[0]},
+            new[] {IcosahedronUvs[2], IcosahedronUvs[3], IcosahedronUvs[16]},
+            new[] {IcosahedronUvs[3], IcosahedronUvs[4], IcosahedronUvs[17]},
+            new[] {IcosahedronUvs[4], IcosahedronUvs[5], IcosahedronUvs[18]},
+            new[] {IcosahedronUvs[5], IcosahedronUvs[20], IcosahedronUvs[19]},
+            new[] {IcosahedronUvs[6], IcosahedronUvs[7], IcosahedronUvs[1]},
+            new[] {IcosahedronUvs[7], IcosahedronUvs[2], IcosahedronUvs[1]},
+            new[] {IcosahedronUvs[7], IcosahedronUvs[8], IcosahedronUvs[2]},
+            new[] {IcosahedronUvs[8], IcosahedronUvs[3], IcosahedronUvs[2]},
+            new[] {IcosahedronUvs[8], IcosahedronUvs[9], IcosahedronUvs[3]},
+            new[] {IcosahedronUvs[9], IcosahedronUvs[4], IcosahedronUvs[3]},
+            new[] {IcosahedronUvs[9], IcosahedronUvs[10], IcosahedronUvs[4]},
+            new[] {IcosahedronUvs[10], IcosahedronUvs[5], IcosahedronUvs[4]},
+            new[] {IcosahedronUvs[10], IcosahedronUvs[21], IcosahedronUvs[5]},
+            new[] {IcosahedronUvs[21], IcosahedronUvs[20], IcosahedronUvs[5]},
+            new[] {IcosahedronUvs[11], IcosahedronUvs[7], IcosahedronUvs[6]},
+            new[] {IcosahedronUvs[12], IcosahedronUvs[8], IcosahedronUvs[7]},
+            new[] {IcosahedronUvs[13], IcosahedronUvs[9], IcosahedronUvs[8]},
+            new[] {IcosahedronUvs[14], IcosahedronUvs[10], IcosahedronUvs[9]},
+            new[] {IcosahedronUvs[15], IcosahedronUvs[21], IcosahedronUvs[10]}
         };
 
-        private static readonly int[][] IsocahedronTriangles =
+        private static readonly int[][] IcosahedronTriangles =
         {
             new[] {1, 2, 0}, new[] {2, 3, 0}, new[] {3, 4, 0}, new[] {4, 5, 0}, new[] {5, 1, 0},
             new[] {6, 7, 1}, new[] {7, 2, 1}, new[] {7, 8, 2}, new[] {8, 3, 2}, new[] {8, 9, 3},
@@ -80,15 +81,42 @@ namespace Thomas
             new[] {11, 7, 6}, new[] {11, 8, 7}, new[] {11, 9, 8}, new[] {11, 10, 9}, new[] {11, 6, 10}
         };
 
+        private static readonly int[][] IcosahedronTrianglesNeighbours =
+        {
+            new[] {1, 4, 6},
+            new[] {2, 0, 8},
+            new[] {3, 1, 10},
+            new[] {4, 2, 12},
+            new[] {0, 3, 14},
+
+            new[] {6, 14, 15},
+            new[] {7, 5, 0},
+            new[] {8, 6, 16},
+            new[] {9, 7, 1},
+            new[] {10, 8, 17},
+            new[] {11, 9, 2},
+            new[] {12, 10, 18},
+            new[] {13, 11, 3},
+            new[] {14, 12, 19},
+            new[] {5, 13, 4},
+
+            new[] {16, 19, 5},
+            new[] {17, 15, 7},
+            new[] {18, 16, 9},
+            new[] {19, 17, 11},
+            new[] {15, 18, 13}
+        };
+
         #endregion
 
+        public bool CreateEveryVersion;
         public int Resolution = 0;
         public int SmoothingAngle = 60;
         public Material Material;
         public Transform World;
 
         private int _nbVertices;
-        private List<Vector3> _spherePoints;
+        private static List<Vector3> _spherePoints;
         private List<Vector2> _sphereUvs;
         private List<int> _sphereTris;
 
@@ -97,20 +125,13 @@ namespace Thomas
 
         protected override void InitService()
         {
-            CreateGeodesicSphere(Resolution);
-            FunctionTimer.DISPLAY_FUNCTION_TIMER_AVERAGE("Subdivision_Total_" + Resolution);
-            FunctionTimer.DISPLAY_FUNCTION_TIMER_AVERAGE("MeshCreation_Total_" + Resolution);
-
-            //for (var i = 0; i < Resolution; i++)
-            //    CreateGeodesicSphere(i);
-
-            /*
-            for (int i = 0; i < Resolution; i++)
+            if (CreateEveryVersion)
             {
-                FunctionTimer.DISPLAY_FUNCTION_TIMER_AVERAGE("Subdivision_Total_" + i);
-                FunctionTimer.DISPLAY_FUNCTION_TIMER_AVERAGE("MeshCreation_Total_" + i);
+                for (var i = 0; i < Resolution; i++)
+                    CreateGeodesicSphere(i);
             }
-            */
+            else
+                CreateGeodesicSphere(Resolution);
         }
 
         private void CreateGeodesicSphere(int resolution)
@@ -118,8 +139,12 @@ namespace Thomas
             var container = new GameObject {name = "GeodesicSphere_" + resolution + "_Subdivisions"};
             container.transform.parent = World;
             var pos = Vector3.zero;
-            //pos.x = 2.5f * (resolution % 4);
-            //pos.y = 2.5f - (2 * resolution / 8) * 2.5f;
+            if (CreateEveryVersion)
+            {
+                pos.x = 2.5f * (resolution % 4);
+                pos.y = 2.5f - (2 * resolution / 8f) * 2.5f;
+            }
+
             container.transform.position = pos;
 
             var isSingleMesh = resolution <= MaxResolutionWithSingleMesh;
@@ -139,24 +164,40 @@ namespace Thomas
             _sphereUvs = new List<Vector2>(_nbVertices);
             _sphereTris = new List<int>(verticesPerMesh);
             _centers = new List<Vector3>();
-            _v1s = new List<Vector3>();
-            _hexes = new List<Hex>();
-            
+            _col = new List<Color>();
+            _rng = new List<float>();
+            _cells = new Dictionary<Vector2Int, Cell>();
+            _tests = new List<Vector3>();
+            InitTriangles(resolution);
+
             FunctionTimer.START_FUNCTION_TIMER("Subdivision_Total_" + resolution);
             for (var i = 0; i < NbIcosahedronFaces; i++)
             {
-                Subdivide(IsocahedronVertices[IsocahedronTriangles[i][0]],
-                    IsocahedronVertices[IsocahedronTriangles[i][1]],
-                    IsocahedronVertices[IsocahedronTriangles[i][2]],
-                    IsocahedronTriangleUvs[i][0],
-                    IsocahedronTriangleUvs[i][1],
-                    IsocahedronTriangleUvs[i][2],
-                    resolution, i == 0 || isSingleMesh);
+                SubdivideGeo(IcosahedronVertices[IcosahedronTriangles[i][0]],
+                    IcosahedronVertices[IcosahedronTriangles[i][1]],
+                    IcosahedronVertices[IcosahedronTriangles[i][2]],
+                    IcosahedronTriangleUvs[i][0],
+                    IcosahedronTriangleUvs[i][1],
+                    IcosahedronTriangleUvs[i][2],
+                    _triangles[i],
+                    resolution);
+                //i == 0 || isSingleMesh);
             }
+            
+            InitCells();
+
             FunctionTimer.STOP_FUNCTION_TIMER("Subdivision_Total_" + resolution);
 
-            FlattenHexes();
-            
+            // Go through each cell, and adjust the center point to create a flat surface
+            foreach (var cell in _cells.Values)
+                cell.Flatten(_spherePoints);
+
+            foreach (var ctr in _centers)
+            {
+                _col.Add(new Color().Random());
+                _rng.Add(Random.Range(0.025f, 0.075f));
+            }
+
             FunctionTimer.START_FUNCTION_TIMER("MeshCreation_Total_" + resolution);
             for (var i = 0; i < nbMeshSubdivisions; i++)
             {
@@ -183,10 +224,125 @@ namespace Thomas
             FunctionTimer.STOP_FUNCTION_TIMER("MeshCreation_Total_" + resolution);
         }
 
-        private void Subdivide(Vector3 v1, Vector3 v2, Vector3 v3, Vector2 uv1, Vector2 uv2, Vector2 uv3, int depth, bool addTris = false)
+        private void InitTriangles(int resolution)
+        {
+            _triangles = new List<Triangle>
+            {
+                new Triangle(TriangleOrientation.Up, SubTriangles.None, resolution), // 1
+                new Triangle(TriangleOrientation.Up, SubTriangles.None, resolution), // 2
+                new Triangle(TriangleOrientation.Up, SubTriangles.None, resolution), // 3
+                new Triangle(TriangleOrientation.Up, SubTriangles.None, resolution), // 4
+                new Triangle(TriangleOrientation.Up, SubTriangles.None, resolution), // 5
+                
+                new Triangle(TriangleOrientation.Up, SubTriangles.None, resolution), // 6
+                new Triangle(TriangleOrientation.Down, SubTriangles.None, resolution), // 7
+                new Triangle(TriangleOrientation.Up, SubTriangles.None, resolution), // 8
+                new Triangle(TriangleOrientation.Down, SubTriangles.None, resolution), // 9
+                new Triangle(TriangleOrientation.Up, SubTriangles.None, resolution), // 10
+                new Triangle(TriangleOrientation.Down, SubTriangles.None, resolution), // 11
+                new Triangle(TriangleOrientation.Up, SubTriangles.None, resolution), // 12
+                new Triangle(TriangleOrientation.Down, SubTriangles.None, resolution), // 13
+                new Triangle(TriangleOrientation.Up, SubTriangles.None, resolution), // 14
+                new Triangle(TriangleOrientation.Down, SubTriangles.None, resolution), // 15
+                
+                new Triangle(TriangleOrientation.Down, SubTriangles.None, resolution), // 16
+                new Triangle(TriangleOrientation.Down, SubTriangles.None, resolution), // 17
+                new Triangle(TriangleOrientation.Down, SubTriangles.None, resolution), // 18
+                new Triangle(TriangleOrientation.Down, SubTriangles.None, resolution), // 19
+                new Triangle(TriangleOrientation.Down, SubTriangles.None, resolution) // 20
+            };
+
+            for (var i = 0; i < IcosahedronTrianglesNeighbours.Length; i++)
+            {
+                _triangles[i].AddNeighbours(
+                    _triangles[IcosahedronTrianglesNeighbours[i][0]],
+                    _triangles[IcosahedronTrianglesNeighbours[i][1]],
+                    _triangles[IcosahedronTrianglesNeighbours[i][2]]);
+            }
+
+            // strictly greater than 0, the last tris have no children
+            for (var i = resolution; i > 0; i--)
+            {
+                foreach (var triangle in _triangles)
+                    triangle.BuildChildrenNeighbors(i);
+            }
+        }
+
+        private void InitCells()
+        {
+            var originTri = _triangles[0];
+            while (originTri.Resolution > 0)
+                originTri = originTri.Children[SubTriangles.TriTopBot];
+            
+            BuildPartialCell(originTri, Vector2Int.zero, TriangleCells.TopBot);
+            // Flood fill cells from origin
+            var topTri = _triangles[0];
+            while (topTri.Resolution > 1)
+                topTri = topTri.Children[SubTriangles.TriTopBot];
+            
+            topTri.BuildHexCell(_cells, new Vector2Int(0, 1));
+            
+            //foreach (var triangle in _triangles)
+            //    triangle.BuildHexCells(_cells);
+        }
+
+        private static Cell BuildPartialCell(Triangle tri, Vector2Int pos, TriangleCells cellDir)
+        {
+            var cell = tri.CreateCell(_cells, pos, cellDir);
+            var newTri = tri;
+            do
+            {
+                cell.AddTris(newTri.GeoTri);
+                newTri = newTri.Right;
+            } while (newTri != tri);
+
+            return cell;
+        }
+
+        private int GetCtrVert(SubTriangles tri, bool isUp)
+        {
+            switch (tri)
+            {
+                case SubTriangles.None: return 0;
+                case SubTriangles.HexBot: return 2;
+                case SubTriangles.HexBotLeft: return 2;
+                case SubTriangles.HexBotRight: return 0;
+                case SubTriangles.HexTop: return 1;
+                case SubTriangles.HexTopLeft: return 1;
+                case SubTriangles.HexTopRight: return 0;
+                case SubTriangles.TriLeft: return 0;
+                case SubTriangles.TriRight: return isUp ? 1 : 2;
+                case SubTriangles.TriTopBot: return isUp ? 2 : 1;
+            }
+
+            return 0;
+        }
+        
+/*
+        public int GetFlattenVert(SubTriangles tri, bool isUp)
+        {
+            switch (tri)
+            {
+                case SubTriangles.None: break;
+                case SubTriangles.HexBot: break;
+                case SubTriangles.HexBotLeft: break;
+                case SubTriangles.HexBotRight: break;
+                case SubTriangles.HexTop: break;
+                case SubTriangles.HexTopLeft: break;
+                case SubTriangles.HexTopRight: break;
+                case SubTriangles.TriLeft: return isUp ? 0 : 1;
+                case SubTriangles.TriRight: break;
+                case SubTriangles.TriTopBot: break;
+            }
+        }
+  */      
+        private void SubdivideGeo(Vector3 v1, Vector3 v2, Vector3 v3, Vector2 uv1, Vector2 uv2, Vector2 uv3, Triangle parent, int depth)
         {
             if (depth == 0)
             {
+                parent.AddGeoTri(_spherePoints.Count, _sphereUvs.Count, _sphereTris.Count, GetCtrVert(parent.Id, parent.IsUp));
+                
+                // Add info to parent to be able to go through all 
                 _spherePoints.Add(v1);
                 _spherePoints.Add(v2);
                 _spherePoints.Add(v3);
@@ -195,85 +351,406 @@ namespace Thomas
                 _sphereUvs.Add(uv2);
                 _sphereUvs.Add(uv3);
 
-                if (addTris)
-                {
-                    _sphereTris.Add(_spherePoints.Count - 1);
-                    _sphereTris.Add(_spherePoints.Count - 2);
-                    _sphereTris.Add(_spherePoints.Count - 3);
-                }
+                _sphereTris.Add(_spherePoints.Count - 1);
+                _sphereTris.Add(_spherePoints.Count - 2);
+                _sphereTris.Add(_spherePoints.Count - 3);
 
                 return;
             }
-            
-            var vctr = (v1 + v2+ v3).normalized;
-            _centers.Add(vctr);
-            var v12a = (v1 + (v2 - v1) / 3f).normalized; 
-            var v12b = (v1 + (v2 - v1) / 3f * 2f).normalized; 
-            var v23a = (v2 + (v3 - v2) / 3f).normalized;  
-            var v23b = (v2 + (v3 - v2) / 3f * 2f).normalized;  
-            var v13a = (v1 + (v3 - v1) / 3f).normalized;  
-            var v13b = (v1 + (v3 - v1) / 3f * 2f).normalized; 
+
+            var vctr = (v1 + v2 + v3).normalized;
+            var v12a = (v1 + (v2 - v1) / 3f).normalized;
+            var v12b = (v1 + (v2 - v1) / 3f * 2f).normalized;
+            var v23a = (v2 + (v3 - v2) / 3f).normalized;
+            var v23b = (v2 + (v3 - v2) / 3f * 2f).normalized;
+            var v13a = (v1 + (v3 - v1) / 3f).normalized;
+            var v13b = (v1 + (v3 - v1) / 3f * 2f).normalized;
 
             var uvctr = (uv1 + uv2 + uv3) / 3f;
-            var uv12a = (uv1 + (uv2 - uv1) / 3f); 
+            var uv12a = (uv1 + (uv2 - uv1) / 3f);
             var uv12b = (uv1 + (uv2 - uv1) / 3f * 2f);
-            var uv23a = (uv2 + (uv3 - uv2) / 3f);  
+            var uv23a = (uv2 + (uv3 - uv2) / 3f);
             var uv23b = (uv2 + (uv3 - uv2) / 3f * 2f);
-            var uv13a = (uv1 + (uv3 - uv1) / 3f);  
+            var uv13a = (uv1 + (uv3 - uv1) / 3f);
             var uv13b = (uv1 + (uv3 - uv1) / 3f * 2f);
-            
-            var addTrisDepth = addTris && depth <= 7;
 
-            Subdivide(v1, v12a, v13a, uv1, uv12a, uv13a, depth - 1, addTrisDepth); // not hex
-            Subdivide(v2, v23a, v12b, uv2, uv23a, uv12b, depth - 1, addTrisDepth); // not hex
-            Subdivide(v3, v13b, v23b, uv3, uv13b, uv23b, depth - 1, addTrisDepth); // not hex
-
-            if(depth -1 == 0)
-                _hexes.Add(new Hex(((v1 + v2).normalized + (v2 + v3).normalized + (v1 + v3).normalized) / 3f, _spherePoints.Count));
+            var nextDepth = depth - 1;
+            SubdivideGeo(v13b, v23b, v3, uv13b, uv23b, uv3, parent.Children[SubTriangles.TriTopBot], nextDepth); // tri top
+            SubdivideGeo(v1, v12a, v13a, uv1, uv12a, uv13a, parent.Children[SubTriangles.TriLeft], nextDepth); // tri bot left
+            SubdivideGeo(v12b, v2, v23a, uv12b, uv2, uv23a, parent.Children[SubTriangles.TriRight], nextDepth); // tri bot right
             
-            Subdivide(vctr, v12a, v12b, uvctr, uv12a, uv12b, depth - 1, addTrisDepth);
-            Subdivide(vctr, v13a, v12a, uvctr, uv13a, uv12a, depth - 1, addTrisDepth);
-            Subdivide(vctr, v12b, v23a, uvctr, uv12b, uv23a, depth - 1, addTrisDepth);
-            Subdivide(vctr, v23a, v23b, uvctr, uv23a, uv23b, depth - 1, addTrisDepth);
-            Subdivide(vctr, v13b, v13a, uvctr, uv13b, uv13a, depth - 1, addTrisDepth);
-            Subdivide(vctr, v23b, v13b, uvctr, uv23b, uv13b, depth - 1, addTrisDepth);
+            SubdivideGeo(v12a, v12b, vctr, uv12a, uv12b, uvctr, parent.Children[SubTriangles.HexBot], nextDepth); // hex bot
+            SubdivideGeo(v13a, v12a, vctr, uv13a, uv12a, uvctr, parent.Children[SubTriangles.HexBotLeft], nextDepth); // hex bot left
+            SubdivideGeo(vctr, v12b, v23a, uvctr, uv12b, uv23a, parent.Children[SubTriangles.HexBotRight], nextDepth); // hex bot right
+            SubdivideGeo(vctr, v23a, v23b, uvctr, uv23a, uv23b, parent.Children[SubTriangles.HexTopRight], nextDepth); // hex top right
+            SubdivideGeo(v13a, vctr, v13b, uv13a, uvctr, uv13b, parent.Children[SubTriangles.HexTopLeft], nextDepth); // hex top left
+            SubdivideGeo(v13b, vctr, v23b, uv13b, uvctr, uv23b, parent.Children[SubTriangles.HexTop], nextDepth); // hex top
         }
 
-        private List<Hex> _hexes;
-        private class Hex
+        private List<Triangle> _triangles;
+        public enum TriangleOrientation { Up, Down }
+        public enum SubTriangles
         {
-            public int CenterVertIdx;
-            public Vector3 CenterVertPos;
+            None,
+            HexBot,
+            HexBotLeft,
+            HexBotRight,
+            HexTop,
+            HexTopLeft,
+            HexTopRight,
+            TriLeft,
+            TriRight,
+            TriTopBot
+        }
 
-            public Hex(Vector3 pos, int idx)
+        public class GeoTriangle
+        {
+            public readonly int PointIdx;
+            public readonly int UVIdx;
+            public readonly int TriIdx;
+            public readonly int CtrVert; // +0, +1, or +2
+
+            public GeoTriangle(int pt, int uv, int tri, int ctrVert)
             {
-                CenterVertPos = pos;
-                CenterVertIdx = idx;
+                PointIdx = pt;
+                UVIdx = uv;
+                TriIdx = tri;
+                CtrVert = ctrVert;
             }
         }
         
-        private void FlattenHexes()
+        public enum TriangleCells { Hex, Left, Right, TopBot }
+        
+        private class Triangle
         {
-            foreach (var hex in _hexes)
+            // Triangles face either up or down
+            // Their Neighbors are always in Right, Left, Top Bottom order
+            // 
+
+            public int Resolution;
+            public TriangleOrientation Orientation;
+            public Dictionary<SubTriangles, Triangle> Children;
+            public Triangle Right { get; private set; }
+            public Triangle Left { get; private set;}
+            public Triangle TopBot { get; private set;}
+            public bool IsUp { get { return Orientation == TriangleOrientation.Up; } }
+            public SubTriangles Id;
+
+            public GeoTriangle GeoTri { get; private set; }
+            public Dictionary<TriangleCells, Cell> Cells;
+
+            public Triangle(TriangleOrientation orientation, SubTriangles id, int resolution)
             {
-                for (var i = 0; i < 6; i++)
-                    _spherePoints[hex.CenterVertIdx + (i * 3)] = hex.CenterVertPos;
+                Resolution = resolution;
+                Orientation = orientation;
+                Children = new Dictionary<SubTriangles, Triangle>();
+                Cells = new Dictionary<TriangleCells, Cell>();
+                Id = id;
+
+                if (resolution == 0)
+                    return;
+
+                var nextResolution = resolution - 1;
+                Children.Add(SubTriangles.TriTopBot, new Triangle(orientation, SubTriangles.TriTopBot, nextResolution));
+                Children.Add(SubTriangles.TriLeft, new Triangle(orientation, SubTriangles.TriLeft, nextResolution));
+                Children.Add(SubTriangles.TriRight, new Triangle(orientation, SubTriangles.TriRight, nextResolution));
+                Children.Add(SubTriangles.HexBot, new Triangle(TriangleOrientation.Up, SubTriangles.HexBot, nextResolution));
+                Children.Add(SubTriangles.HexBotLeft, new Triangle(TriangleOrientation.Down, SubTriangles.HexBotLeft, nextResolution));
+                Children.Add(SubTriangles.HexBotRight, new Triangle(TriangleOrientation.Down, SubTriangles.HexBotRight, nextResolution));
+                Children.Add(SubTriangles.HexTop, new Triangle(TriangleOrientation.Down, SubTriangles.HexTop, nextResolution));
+                Children.Add(SubTriangles.HexTopLeft, new Triangle(TriangleOrientation.Up, SubTriangles.HexTopLeft, nextResolution));
+                Children.Add(SubTriangles.HexTopRight, new Triangle(TriangleOrientation.Up, SubTriangles.HexTopRight, nextResolution));
+            }
+
+            public void BuildChildrenNeighbors(int resolution)
+            {
+                if (Resolution != resolution)
+                {
+                    foreach (var child in Children.Values)
+                        child.BuildChildrenNeighbors(resolution);
+                    return;
+                }
+
+                var hexbot = Children[SubTriangles.HexBot];
+                var hexbotright = Children[SubTriangles.HexBotRight];
+                var hexbotleft = Children[SubTriangles.HexBotLeft];
+                var hextop = Children[SubTriangles.HexTop];
+                var hextopright = Children[SubTriangles.HexTopRight];
+                var hextopleft = Children[SubTriangles.HexTopLeft];
+                var tritopbot = Children[SubTriangles.TriTopBot];
+                var triright = Children[SubTriangles.TriRight];
+                var trileft = Children[SubTriangles.TriLeft];
+                
+                tritopbot.AddNeighbours(
+                    IsUp != Right.IsUp ? Right.Children[SubTriangles.TriLeft] : Right.Children[SubTriangles.TriTopBot],
+                    IsUp != Left.IsUp ? Left.Children[SubTriangles.TriRight] : Left.Children[SubTriangles.TriTopBot],
+                    IsUp ? hextop : hexbot);
+                
+                trileft.AddNeighbours(
+                    IsUp ? hexbotleft : hextopleft,
+                    IsUp != Left.IsUp ? Left.Children[SubTriangles.TriTopBot] : Left.Children[SubTriangles.TriRight],
+                    TopBot.Children[SubTriangles.TriLeft]);
+
+                triright.AddNeighbours(
+                    IsUp != Right.IsUp ? Right.Children[SubTriangles.TriTopBot] : Right.Children[SubTriangles.TriLeft],
+                    IsUp ? hexbotright : hextopright,
+                    TopBot.Children[SubTriangles.TriRight]);
+                
+                hexbot.AddNeighbours(
+                    hexbotright,
+                    hexbotleft,
+                    IsUp ? TopBot.Children[SubTriangles.HexTop] : tritopbot);
+                
+                hexbotleft.AddNeighbours(
+                    hexbot,
+                    IsUp ? 
+                        trileft :
+                        Left.IsUp ? 
+                            Left.Children[SubTriangles.HexTopRight] :
+                            Left.Children[SubTriangles.HexBotRight],
+                    hextopleft);
+
+                hexbotright.AddNeighbours(
+                    IsUp ? 
+                        triright : 
+                        Right.IsUp ? 
+                            Right.Children[SubTriangles.HexTopLeft] :
+                            Right.Children[SubTriangles.HexBotLeft],
+                    hexbot,
+                    hextopright);
+
+                hextop.AddNeighbours(
+                    hextopright,
+                    hextopleft,
+                    IsUp ? tritopbot : TopBot.Children[SubTriangles.HexBot]);
+
+                hextopleft.AddNeighbours(
+                    hextop,
+                    IsUp ?
+                        Left.IsUp ? 
+                            Right.Children[SubTriangles.HexTopRight] :
+                            Right.Children[SubTriangles.HexBotRight] : 
+                        trileft,
+                    hexbotleft);
+
+                hextopright.AddNeighbours(
+                    IsUp ? 
+                        Right.IsUp ? 
+                            Right.Children[SubTriangles.HexTopLeft] :
+                            Right.Children[SubTriangles.HexBotLeft] : 
+                        triright,
+                    hextop,
+                    hexbotright);
+            }
+
+            public void AddNeighbours(Triangle right, Triangle left, Triangle topbot)
+            {
+                Right = right;
+                Left = left;
+                TopBot = topbot;
+            }
+
+            public void AddGeoTri(int pointIdx, int uvIdx, int triIdx, int ctrVert)
+            {
+                GeoTri = new GeoTriangle(pointIdx, uvIdx, triIdx, ctrVert);
+            }
+            
+            public void BuildHexCell(Dictionary<Vector2Int, Cell> allCells, Vector2Int pos, bool stop = false)
+            {
+                if (!Cells.ContainsKey(TriangleCells.Hex))
+                {
+                    CreateCell(allCells, pos, TriangleCells.Hex,
+                        Children[SubTriangles.HexBot].GeoTri,
+                        Children[SubTriangles.HexBotLeft].GeoTri,
+                        Children[SubTriangles.HexBotRight].GeoTri,
+                        Children[SubTriangles.HexTop].GeoTri,
+                        Children[SubTriangles.HexTopLeft].GeoTri,
+                        Children[SubTriangles.HexTopRight].GeoTri);
+                }
+
+                if (stop)
+                    return;
+                
+                if(!Right.Cells.ContainsKey(TriangleCells.Hex))
+                    Right.BuildHexCell(allCells, new Vector2Int(pos.x + 1, pos.y));
+                else if (Right.Cells[TriangleCells.Hex].X == 0)
+                {
+                    /*
+                    if (!Right.Cells.ContainsKey(TriangleCells.Right))
+                    {
+                        List<GeoTriangle> geoTris = new List<GeoTriangle>();
+                        geoTris.Add(Right.Children[SubTriangles.TriRight].GeoTri);
+                        geoTris.Add(Right.Right.Children[SubTriangles.TriLeft].GeoTri);
+                        geoTris.Add(Right.Right.TopBot.Children[SubTriangles.TriLeft].GeoTri);
+                        geoTris.Add(Right.Right.TopBot.Left.Children[SubTriangles.TriTopBot].GeoTri);
+                        geoTris.Add(Right.TopBot.Right.Children[SubTriangles.TriTopBot].GeoTri);
+                        var last =  Right.TopBot.Children[SubTriangles.TriRight].GeoTri;
+                        if(!geoTris.Contains(last)) 
+                            geoTris.Add(last);
+
+                        foreach (var tri in geoTris)
+                            _tests.Add(_spherePoints[tri.CtrVert > 1 ? tri.PointIdx : tri.PointIdx + tri.CtrVert + 1]);
+                        
+                        var cell = Right.CreateCell(_cells, pos, TriangleCells.Right, geoTris.ToArray());
+                        Right.Right.AddCell(cell, TriangleCells.Left);
+                        Right.Right.TopBot.AddCell(cell, TriangleCells.Left);
+                        Right.Right.TopBot.Left.AddCell(cell, TriangleCells.TopBot);
+                        Right.TopBot.Right.AddCell(cell, TriangleCells.TopBot);
+                        if(geoTris.Count > 5)
+                            Right.TopBot.AddCell(cell, TriangleCells.Right);
+
+                    }
+                    */
+                    if(!Right.TopBot.Cells.ContainsKey(TriangleCells.Hex))
+                        Right.TopBot.BuildHexCell(allCells, new Vector2Int(Right.Cells[TriangleCells.Hex].X, pos.y + 1));
+                    
+                    else if (!TopBot.Cells.ContainsKey(TriangleCells.Hex))
+                       TopBot.BuildHexCell(allCells, new Vector2Int(pos.x, pos.y + 1));
+                }
+                else if (!TopBot.Cells.ContainsKey(TriangleCells.Hex))
+                    TopBot.BuildHexCell(allCells, new Vector2Int(pos.x, pos.y + 1));
+            }
+
+            public void BuildPartialCells(Dictionary<Vector2Int, Cell> cells)
+            {
+                CreateCell(cells, new Vector2Int(0, 0), TriangleCells.TopBot,
+                    Children[SubTriangles.TriTopBot].GeoTri
+                );
+                CreateCell(cells, new Vector2Int(0, 0), TriangleCells.Left,
+                    Children[SubTriangles.TriLeft].GeoTri
+                );
+                CreateCell(cells, new Vector2Int(0, 0),TriangleCells.Right,
+                    Children[SubTriangles.TriRight].GeoTri
+                );
+            }
+            
+            public Cell CreateCell(Dictionary<Vector2Int, Cell> cells, Vector2Int pos, TriangleCells cellDir, params GeoTriangle[] tris)
+            {
+                Cell cell;
+                if(cells.ContainsKey(pos))
+                    cell = cells[pos];
+                else
+                {
+                    cell = new Cell(pos);
+                    cells.Add(cell.XY, cell);
+                }
+
+                cell.AddTris(tris);
+                Cells.Add(cellDir, cell);
+                return cell;
+            }
+
+            public void AddCell(Cell cell, TriangleCells cellDir)
+            {
+                Cells.Add(cellDir, cell);
             }
         }
 
-        private List<Vector3> _centers;
-        private List<Vector3> _v1s;
+        private static Dictionary<Vector2Int, Cell> _cells;
 
+        private static bool once;
+        private static bool onceB;
+        
+        private class Cell
+        {
+            public List<GeoTriangle> Tris;
+            public Vector3 Normal;
+            public Vector2Int XY;
+            public int X { get { return XY.x; } }
+            public int Y { get { return XY.y; } }
+
+            public Cell(Vector2Int xy)
+            {
+                XY = xy;
+                Tris = new List<GeoTriangle>(6);
+            }
+
+            public void AddTris(params GeoTriangle[] tris)
+            {
+                foreach (var tri in tris)
+                    Tris.Add(tri);
+            }
+
+            public void Flatten(List<Vector3> pts)
+            {
+                var ctr = Tris.Count != 6 ? GetPolygonCtr(pts) : GetHexCtr(pts);
+                foreach (var tri in Tris)
+                    pts[tri.PointIdx + tri.CtrVert] = ctr; // flatten center vert to calculated ctr
+                _centers.Add(ctr);
+            }
+            
+            private Vector3 GetHexCtr(List<Vector3> pts)
+            {
+                var ctr = Vector3.zero;
+                foreach (var tri in Tris)
+                    ctr += pts[tri.CtrVert > 1 ? tri.PointIdx : tri.PointIdx + tri.CtrVert + 1];
+                return ctr /= Tris.Count;
+            }
+
+            private Vector3 GetPolygonCtr(List<Vector3> pts)
+            {
+                var verts = new List<Vector3>();
+                foreach (var tri in Tris)
+                    verts.Add(pts[tri.CtrVert > 1 ? tri.PointIdx : tri.PointIdx + tri.CtrVert + 1]);
+                return GetCentroid(verts.ToArray());
+            }
+        }
+        
+         private static Vector3 GetCentroid(Vector3[] vertices)
+         {
+             float sx = 0f, sy = 0f, sz = 0f, sL = 0f;
+             Action<Vector3, Vector3> add = (prev, next) =>
+             {
+                 var l = Mathf.Pow(
+                     Mathf.Pow(next.x - prev.x, 2) + 
+                     Mathf.Pow(next.y - prev.y, 2) + 
+                     Mathf.Pow(next.z - prev.z, 2), 0.5f);
+                 sx += (prev.x + next.x) / 2f * l;
+                 sy += (prev.y + next.y) / 2f * l;
+                 sz += (prev.z + next.z) / 2f * l;
+                 sL += l;
+             };
+
+             add(vertices[vertices.Length - 1], vertices[0]);
+             for (var i = 1; i < vertices.Length; i++)
+                 add(vertices[i - 1], vertices[i]);
+             return new Vector3(sx, sy, sz) / sL;
+        }
+         private static List<Vector3> _tests;
+         private static List<Vector3> _centers;
+        private List<Color> _col;
+        private static int testctr;
+
+        private List<float> _rng;
+        private Color[] cols = {Color.blue, Color.cyan, Color.red, Color.magenta, Color.yellow, Color.green};
         protected void OnDrawGizmos()
         {
+            if (!Application.isPlaying)
+                return;
+
             Gizmos.color = Color.blue;
-            if(_centers != null) 
-                foreach (var ctr in _centers) 
-                    Gizmos.DrawWireSphere(ctr, 0.05f);
+            if (_centers != null)
+            {
+                for (var i = 0; i < _centers.Count; i++)
+                {
+                    var ctr = _centers[i];
+                    //Gizmos.color = _col[i];
+                    Gizmos.DrawWireSphere(ctr, 0.025f); // _rng[i]
+                }
+            }
+
+            for (var i = 0; i < _tests.Count; i++)
+            {
+                Gizmos.color = cols[i];
+                Gizmos.DrawWireSphere(_tests[i], 0.025f);
+            }
+
             Gizmos.color = Color.red;
-            if(_v1s != null)
-                foreach (var v1 in _v1s)
-                    Gizmos.DrawWireSphere(v1, 0.05f);
+            //Gizmos.DrawWireSphere(_spherePoints[testctr], 0.05f); // _rng[i]
+            
+            Gizmos.color = Color.magenta;
+            Gizmos.DrawWireSphere(_spherePoints[0], 0.025f); // _rng[i]
+
         }
 
         private static void CalculateMeshTangents(Mesh mesh)
@@ -348,6 +825,14 @@ namespace Thomas
             }
 
             mesh.tangents = tangents;
+        }
+    }
+
+    public static class Extensions
+    {
+        public static Color Random(this Color col)
+        {
+            return new Color(UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f));
         }
     }
 }
