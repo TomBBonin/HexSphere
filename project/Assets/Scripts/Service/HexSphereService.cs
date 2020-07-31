@@ -56,28 +56,28 @@ namespace Thomas
             new[] {IcosahedronUvs[4], IcosahedronUvs[5], IcosahedronUvs[18]},
             new[] {IcosahedronUvs[5], IcosahedronUvs[20], IcosahedronUvs[19]},
             new[] {IcosahedronUvs[6], IcosahedronUvs[7], IcosahedronUvs[1]},
-            new[] {IcosahedronUvs[7], IcosahedronUvs[2], IcosahedronUvs[1]},
+            new[] {IcosahedronUvs[1], IcosahedronUvs[7], IcosahedronUvs[2]},
             new[] {IcosahedronUvs[7], IcosahedronUvs[8], IcosahedronUvs[2]},
-            new[] {IcosahedronUvs[8], IcosahedronUvs[3], IcosahedronUvs[2]},
+            new[] {IcosahedronUvs[2], IcosahedronUvs[8], IcosahedronUvs[3]},
             new[] {IcosahedronUvs[8], IcosahedronUvs[9], IcosahedronUvs[3]},
-            new[] {IcosahedronUvs[9], IcosahedronUvs[4], IcosahedronUvs[3]},
+            new[] {IcosahedronUvs[3], IcosahedronUvs[9], IcosahedronUvs[4]},
             new[] {IcosahedronUvs[9], IcosahedronUvs[10], IcosahedronUvs[4]},
-            new[] {IcosahedronUvs[10], IcosahedronUvs[5], IcosahedronUvs[4]},
+            new[] {IcosahedronUvs[4], IcosahedronUvs[10], IcosahedronUvs[5]},
             new[] {IcosahedronUvs[10], IcosahedronUvs[21], IcosahedronUvs[5]},
-            new[] {IcosahedronUvs[21], IcosahedronUvs[20], IcosahedronUvs[5]},
-            new[] {IcosahedronUvs[11], IcosahedronUvs[7], IcosahedronUvs[6]},
-            new[] {IcosahedronUvs[12], IcosahedronUvs[8], IcosahedronUvs[7]},
-            new[] {IcosahedronUvs[13], IcosahedronUvs[9], IcosahedronUvs[8]},
-            new[] {IcosahedronUvs[14], IcosahedronUvs[10], IcosahedronUvs[9]},
-            new[] {IcosahedronUvs[15], IcosahedronUvs[21], IcosahedronUvs[10]}
+            new[] {IcosahedronUvs[5], IcosahedronUvs[21], IcosahedronUvs[20]},
+            new[] {IcosahedronUvs[6], IcosahedronUvs[11], IcosahedronUvs[7]},
+            new[] {IcosahedronUvs[7], IcosahedronUvs[12], IcosahedronUvs[8]},
+            new[] {IcosahedronUvs[8], IcosahedronUvs[13], IcosahedronUvs[9]},
+            new[] {IcosahedronUvs[9], IcosahedronUvs[14], IcosahedronUvs[10]},
+            new[] {IcosahedronUvs[10], IcosahedronUvs[15], IcosahedronUvs[21]}
         };
 
         private static readonly int[][] IcosahedronTriangles =
         {
             new[] {1, 2, 0}, new[] {2, 3, 0}, new[] {3, 4, 0}, new[] {4, 5, 0}, new[] {5, 1, 0},
-            new[] {6, 7, 1}, new[] {7, 2, 1}, new[] {7, 8, 2}, new[] {8, 3, 2}, new[] {8, 9, 3},
-            new[] {9, 4, 3}, new[] {9, 10, 4}, new[] {10, 5, 4}, new[] {10, 6, 5}, new[] {6, 1, 5},
-            new[] {11, 7, 6}, new[] {11, 8, 7}, new[] {11, 9, 8}, new[] {11, 10, 9}, new[] {11, 6, 10}
+            new[] {6, 7, 1}, new[] {1, 7, 2}, new[] {7, 8, 2}, new[] {2, 8, 3}, new[] {8, 9, 3},
+            new[] {3, 9, 4}, new[] {9, 10, 4}, new[] {4, 10, 5}, new[] {10, 6, 5}, new[] {5, 6, 1},
+            new[] {6, 11, 7}, new[] {7, 11, 8}, new[] {8, 11, 9}, new[] {9, 11, 10}, new[] {10, 11, 6}
         };
 
         private static readonly int[][] IcosahedronTrianglesNeighbours =
@@ -316,6 +316,7 @@ namespace Thomas
             return 0;
         }
         
+        // todo : fold this into triangle constructor / creation
         private void SubdivideGeo(Vector3 v1, Vector3 v2, Vector3 v3, Vector2 uv1, Vector2 uv2, Vector2 uv3, Triangle parent, int depth)
         {
             if (depth == 0)
@@ -379,7 +380,6 @@ namespace Thomas
                 SubdivideGeo(v12a, v12b, vctr, uv12a, uv12b, uvctr, parent.Children[SubTriangles.HexBotLeft], nextDepth); // hex bot left
                 SubdivideGeo(vctr, v23a, v23b, uvctr, uv23a, uv23b, parent.Children[SubTriangles.HexBotRight], nextDepth); // hex bot right
                 SubdivideGeo(vctr, v23b, v13b, uvctr, uv23b, uv13b, parent.Children[SubTriangles.HexTopRight], nextDepth); // hex top right
-                
                 SubdivideGeo(v12a, vctr, v13a, uv12a, uvctr, uv13a, parent.Children[SubTriangles.HexTopLeft], nextDepth); // hex top left
                 SubdivideGeo(v13a, vctr, v13b, uv13a, uvctr, uv13b, parent.Children[SubTriangles.HexTop], nextDepth); // hex top
             }
@@ -526,8 +526,8 @@ namespace Thomas
                     hextop,
                     IsUp ?
                         Left.IsUp ? 
-                            Right.Children[SubTriangles.HexTopRight] :
-                            Right.Children[SubTriangles.HexBotRight] : 
+                            Left.Children[SubTriangles.HexTopRight] :
+                            Left.Children[SubTriangles.HexBotRight] : 
                         trileft,
                     hexbotleft);
 

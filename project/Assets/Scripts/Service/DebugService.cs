@@ -33,7 +33,7 @@ namespace Thomas
 
 
             if (Input.GetKeyUp(KeyCode.P))
-                _currentResolution = Mathf.Max(_currentResolution + 1, HexSphereService.I.Resolution);
+                _currentResolution = Mathf.Max(_currentResolution + 1, 1 /*HexSphereService.I.Resolution*/);
             if (Input.GetKeyUp(KeyCode.M))
                 _currentResolution = Mathf.Max(_currentResolution - 1, 0);
         }
@@ -52,8 +52,7 @@ namespace Thomas
             {
                 case DebugView.None: return;
                 case DebugView.HexTris: DrawHexTris(null); break;
-                case DebugView.FaceRelations: DrawFaceRelations(null); break;
-                case DebugView.TriRelations: DrawTriRelations(); break;
+                case DebugView.FaceRelations: DrawTriRelations(null); break;
                 case DebugView.TriCellRelations: DrawTriCellRelations(); break;
             }
         }
@@ -63,10 +62,11 @@ namespace Thomas
             if (tri == null)
             { 
                 DrawHexTris(HexSphereService.I._triangles[0]);
+                DrawHexTris(HexSphereService.I._triangles[6]);
                 return;
             }
             
-            if (tri.Resolution > 1)
+            if (tri.Resolution > _currentResolution)
             {
                 foreach (var child in tri.Children.Values)
                     DrawHexTris(child);
@@ -77,26 +77,32 @@ namespace Thomas
             foreach (var child in tri.Children.Values)
             {
                 Gizmos.color = Colors[i];
-                var pt = child.GeoTri.PointIdx;
-                var ctr = (HexSphereService._spherePoints[pt] + HexSphereService._spherePoints[pt + 1] + HexSphereService._spherePoints[pt + 2]) / 3f;
+                Vector3 ctr;
+                if (_currentResolution == 1)
+                {
+                    var pt = child.GeoTri.PointIdx;
+                    ctr = (HexSphereService._spherePoints[pt] + HexSphereService._spherePoints[pt + 1] + HexSphereService._spherePoints[pt + 2]) / 3f;
+                }
+                else
+                    ctr = HexSphereService._spherePoints[child.Children[HexSphereService.SubTriangles.HexTopRight].GeoTri.PointIdx];
                 Gizmos.DrawWireSphere(ctr, 0.025f);
                 i++;
             }
         }
 
-        private void DrawFaceRelations(HexSphereService.Triangle tri)
+        private void DrawTriRelations(HexSphereService.Triangle tri)
         {
             if (tri == null)
             {
-                //foreach (var face in HexSphereService.I._triangles)
-                    DrawFaceRelations(HexSphereService.I._triangles[0]);
+                foreach (var face in HexSphereService.I._triangles)
+                    DrawTriRelations(face);
                 return;
             }
 
             if (tri.Resolution > _currentResolution)
             {
                 foreach (var child in tri.Children.Values)
-                    DrawFaceRelations(child);
+                    DrawTriRelations(child);
                 return;
             }
 
@@ -136,11 +142,6 @@ namespace Thomas
             return (HexSphereService._spherePoints[idx] + HexSphereService._spherePoints[idx + 1] + HexSphereService._spherePoints[idx + 2]) / 3f;
         }
 
-        private void DrawTriRelations()
-        {
-            
-        }
-        
         private void DrawTriCellRelations()
         {
             
