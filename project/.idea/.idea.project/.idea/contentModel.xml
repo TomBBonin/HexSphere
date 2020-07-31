@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ContentModelStore">
     <e p="C:\Users\thomas\.Rider2019.2\system\extResources" t="IncludeRecursive" />
@@ -10,8 +10,10 @@
           <e p="Base" t="Include">
             <e p="Service.cs" t="Include" />
           </e>
+          <e p="CellCanvas.cs" t="Include" />
           <e p="MobileApp.cs" t="Include" />
           <e p="Service" t="Include">
+            <e p="DebugService.cs" t="Include" />
             <e p="HexSphereService.cs" t="Include" />
           </e>
           <e p="Utils" t="Include">
