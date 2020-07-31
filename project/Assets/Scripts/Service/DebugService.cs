@@ -14,7 +14,6 @@ namespace Thomas
             None,
             HexTris,
             FaceRelations,
-            TriRelations,
             TriCellRelations
         }
         private DebugView _debugView;
@@ -27,8 +26,6 @@ namespace Thomas
             if (Input.GetKeyUp(KeyCode.F2))
                 AssignDebugView(DebugView.FaceRelations);
             if (Input.GetKeyUp(KeyCode.F3))
-                AssignDebugView(DebugView.TriRelations);
-            if (Input.GetKeyUp(KeyCode.F4))
                 AssignDebugView(DebugView.TriCellRelations);
 
 
@@ -53,7 +50,7 @@ namespace Thomas
                 case DebugView.None: return;
                 case DebugView.HexTris: DrawHexTris(null); break;
                 case DebugView.FaceRelations: DrawTriRelations(null); break;
-                case DebugView.TriCellRelations: DrawTriCellRelations(); break;
+                case DebugView.TriCellRelations: DrawTriCellRelations(null); break;
             }
         }
         
@@ -142,9 +139,50 @@ namespace Thomas
             return (HexSphereService._spherePoints[idx] + HexSphereService._spherePoints[idx + 1] + HexSphereService._spherePoints[idx + 2]) / 3f;
         }
 
-        private void DrawTriCellRelations()
+        private void DrawTriCellRelations(HexSphereService.Triangle tri)
         {
+            if (tri == null)
+            {
+                foreach (var baseTri in HexSphereService.I._triangles)
+                    DrawTriCellRelations(baseTri);
+                return;
+            }
             
+            if (tri.Resolution > 1)
+            {
+                foreach (var child in tri.Children.Values)
+                    DrawTriCellRelations(child);
+                return;
+            }
+
+            Vector3 hexctr = Vector3.zero;
+            if (tri.Cells.ContainsKey(HexSphereService.TriangleCells.Hex))
+            {
+                hexctr = tri.Cells[HexSphereService.TriangleCells.Hex].Normal;
+                Gizmos.color = Color.magenta;
+                Gizmos.DrawWireSphere(hexctr, 0.025f);
+            }
+
+            if (tri.Cells.ContainsKey(HexSphereService.TriangleCells.Right))
+            {
+                var rightCtr = tri.Cells[HexSphereService.TriangleCells.Right].Normal;
+                Gizmos.color = Color.green;
+                Gizmos.DrawLine(hexctr, rightCtr);
+            }
+
+            if (tri.Cells.ContainsKey(HexSphereService.TriangleCells.Left))
+            {
+                var leftCtr = tri.Cells[HexSphereService.TriangleCells.Left].Normal;
+                Gizmos.color = Color.red;
+                Gizmos.DrawLine(hexctr, leftCtr);
+            }
+
+            if (tri.Cells.ContainsKey(HexSphereService.TriangleCells.TopBot))
+            {
+                var topBotCtr = tri.Cells[HexSphereService.TriangleCells.TopBot].Normal;
+                Gizmos.color = Color.blue;
+                Gizmos.DrawLine(hexctr, topBotCtr);
+            }
         }
     }
 }
